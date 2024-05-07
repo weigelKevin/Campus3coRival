@@ -48,6 +48,7 @@ input[type="number"] {
 }
 
 input[type="text"]:focus,
+
 input[type="number"]:focus {
     border-color: #66bb6a; /* Mittelgrün */
 }
