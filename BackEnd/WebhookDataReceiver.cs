@@ -21,19 +21,19 @@ namespace Company.Function
             string envQuery = Environment.GetEnvironmentVariable("");
             string streamQuery = req.Query["code"];
 
-            //PayloadCheck p1 = new PayloadCheck();
+            PayloadCheck p1 = new PayloadCheck();
             
             log.LogInformation("Function got triggered by Webhook request ....");
 
-            //bool queryBool = p1.QueryAuthorization(envQuery, streamQuery);
+            bool queryBool = p1.QueryAuthorization(envQuery, streamQuery);
             
-            /*
+            
             if (queryBool!=false)
             {
                 log.LogError("Authorization Unsucessfull");
                 return new UnauthorizedResult();
             }
-            */
+            
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var convRequestBody = JsonConvert.DeserializeObject(requestBody);

@@ -1,1 +1,30 @@
-hi
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nachhaltigkeitsdatenformular</title>
+    <link rel="stylesheet" href="WebHookSite.css">
+</head>
+<body>
+    <form id="sustainabilityForm">
+        <h1>Nachhaltigkeitsdaten Erfassung</h1>
+
+        <label for="school">Schule:</label>
+        <input type="text" id="school" name="school" required>
+
+        <label for="room">Raumnummer (optional):</label>
+        <input type="text" id="room" name="room">
+
+        <label for="electricity">Stromverbrauch (kWh) - optional:</label>
+        <input type="number" id="electricity" name="electricity">
+
+        <label for="water">Wasserverbrauch (Liter) - optional:</label>
+        <input type="number" id="water" name="water">
+
+        <button type="submit">Daten senden</button>
+    </form>
+
+    <script src="WebHookSite.js"></script>
+</body>
+</html>
