@@ -8,6 +8,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Company.Function
 {
@@ -19,58 +20,68 @@ namespace Company.Function
             ILogger log
         )
         {
-            log.LogInformation("Funktion wurde durch einen Webhook-Aufruf ausgelöst...");
+            log.LogInformation("Function triggered by webhook post request...");
+           
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
 
-            log.LogInformation("Stream readed");
-            dynamic harvestJson = JsonConvert.DeserializeObject<dynamic>(requestBody);
+            log.LogInformation("extracting data stream");
+            JObject harvestJson = JsonConvert.DeserializeObject<JObject>(requestBody);
+             log.LogInformation("harvester initialized");
+            log.LogInformation($"feeding harvester with gathered data");
 
             if (harvestJson == null)
             {
-                log.LogError("Anforderungskörper ist leer oder nicht im JSON-Format.");
-                return new BadRequestObjectResult(
-                    "Anforderungskörper ist leer oder nicht im JSON-Format."
-                );
+                log.LogError("data stream did not locate any JSON outcome");
+                return new JsonResult(new {error = "data stream did not locate any JSON outcome"});
             }
 
-            if (harvestJson.id == null)
+            if (harvestJson["id"] == null)
             {
-                harvestJson.id = Guid.NewGuid().ToString();
+                harvestJson["id"] = Guid.NewGuid().ToString();
             }
 
-            log.LogInformation($"Empfangene Daten: {requestBody}");
+            log.LogInformation($"harvester belly: {requestBody}");
+
+            log.LogInformation($"starting CosmosDB process...");
+        
 
             string connectionStringURL = "https://kevinweigel.documents.azure.com:443/";
+            log.LogInformation($"setting up connection URL");
+            log.LogInformation("Gathering secret data");
             string primaryKey = Environment.GetEnvironmentVariable("CosmosPrimaryKey");
+            log.LogInformation("Gathered secret data...");
             CosmosClient cosmosClient = new CosmosClient(connectionStringURL, primaryKey);
+            log.LogInformation("creating harvesterClient...");
             Container container = cosmosClient.GetContainer(
                 "HarvestedData",
                 "HarvestedDataContainer"
             );
 
+
             try
             {
-                if (harvestJson.tenantId == null)
+                if (harvestJson["tenantId"] == null)
                 {
-                    log.LogError("Tenant-ID fehlt im Anforderungskörper.");
-                    return new BadRequestObjectResult("Tenant-ID fehlt im Anforderungskörper.");
+                    log.LogError("There is no PartitionKey delivered");
+                    return new JsonResult(new { error = "There is no PartitionKey delivered"});
                 }
 
-                ItemResponse<dynamic> response = await container.CreateItemAsync(
+
+                log.LogInformation("Sending harvestClient to Cosmos....");
+                ItemResponse<JObject> response = await container.CreateItemAsync(
                     harvestJson,
-                    new PartitionKey(harvestJson.tenantId.ToString())
+                    new PartitionKey(harvestJson["tenantId"].ToString())
                 );
-                log.LogInformation($"Element in Cosmos DB mit ID erstellt: {response.Resource.id}");
-                return new OkObjectResult($"Element erstellt mit ID: {response.Resource.id}");
+                log.LogInformation($"harvester is now in CosmosDB");
+                log.LogInformation("Thank you for using CampusEcoRival API");
+                return new JsonResult(new{message="harvester is now in CosmosDB", id = response.Resource["id".ToString()]} );
+            
             }
             catch (Exception ex)
             {
-                log.LogError($"Fehler beim Erstellen des Elements in Cosmos DB: {ex}");
-                return new ObjectResult($"Interner Serverfehler: {ex.Message}")
-                {
-                    StatusCode = StatusCodes.Status500InternalServerError
-                };
+                log.LogError($"harvester couldn't get sended to Cosmos: {ex}");
+                return new JsonResult(new {error =$"harvester couldn't get sended to Cosmos: {ex.Message}"}) {StatusCode = StatusCodes.Status500InternalServerError};
             }
         }
     }

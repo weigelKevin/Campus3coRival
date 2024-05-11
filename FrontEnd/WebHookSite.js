@@ -1,38 +1,48 @@
 document.getElementById('sustainabilityForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // Verhindert das normale Verhalten des Formular-Submits
+    event.preventDefault();
 
-    // Daten sammeln, die vom Formular gesendet werden
+    // Daten sammeln
     const data = {
-        tenantId: document.getElementById('tenantId').value, // Wert des Tenant ID Feldes
+        tenantId: document.getElementById('tenantId').value,
         school: document.getElementById('school').value,
-        room: document.getElementById('room').value || null, // Optional, standardmäßig null wenn leer
-        electricity: document.getElementById('electricity').value || null, // Optional
-        water: document.getElementById('water').value || null // Optional
+        room: document.getElementById('room').value || null,
+        electricity: document.getElementById('electricity').value || null,
+        water: document.getElementById('water').value || null
     };
 
-    // URL deiner Azure Function
+    // URL Ihrer Azure Function
     const azureFunctionUrl = 'https://campusecorivaldatareceiver.azurewebsites.net/api/WebhookDataReceiver?code=LBhH6nwgUFJ-RedsB1thlnHQyjsrQMU6Ia0ie5hUHm6aAzFuzJSAXg==';
 
-    // Anfrage an die Azure Function senden
     fetch(azureFunctionUrl, {
-        method: 'POST', // HTTP-Methode
-        body: JSON.stringify(data), // Daten als JSON-String
+        method: 'POST',
+        body: JSON.stringify(data),
         headers: {
-            'Content-Type': 'application/json' // Setzt den Inhaltstyp auf JSON
+            'Content-Type': 'application/json'
         }
     })
     .then(response => {
-        if (!response.ok) { // Überprüft, ob der HTTP-Statuscode erfolgreich ist
-            throw new Error('Network response was not ok ' + response.status);
+        // Überprüfen, ob der HTTP-Statuscode erfolgreich ist
+        if (!response.ok) {
+            // Lesen Sie den Body als Text, um sowohl Text- als auch JSON-Fehlermeldungen zu behandeln
+            return response.text().then(text => {
+                try {
+                    // Versuchen, den Text als JSON zu interpretieren
+                    const errorData = JSON.parse(text);
+                    throw new Error('Error ' + response.status + ': ' + (errorData.message || errorData.error || text));
+                } catch (err) {
+                    // Wenn es kein JSON ist, verwenden Sie den reinen Text
+                    throw new Error('Error ' + response.status + ': ' + text);
+                }
+            });
         }
-        return response.json(); // Verarbeitet die Antwort als JSON
+        return response.json();
     })
     .then(data => {
         console.log('Success:', data);
-        alert('Daten erfolgreich gesendet!'); // Benachrichtigung über erfolgreichen Sendevorgang
+        alert('Daten erfolgreich gesendet!');
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Fehler beim Senden der Daten: ' + error.message); // Fehlermeldung, wenn ein Fehler auftritt
+        alert('Fehler beim Senden der Daten: ' + error.message);
     });
 });
