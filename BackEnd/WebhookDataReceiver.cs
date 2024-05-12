@@ -40,6 +40,10 @@ namespace Company.Function
             {
                 harvestJson["id"] = Guid.NewGuid().ToString();
             }
+            if (harvestJson["tenantId"] == null)
+            {
+                harvestJson["tenantId"] = Guid.NewGuid().ToString();
+            }
 
             log.LogInformation($"harvester belly: {requestBody}");
 

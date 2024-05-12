@@ -3,7 +3,7 @@ document.getElementById('sustainabilityForm').addEventListener('submit', functio
 
     // Daten sammeln
     const data = {
-        tenantId: document.getElementById('tenantId').value,
+        //tenantId: document.getElementById('tenantId').value,
         school: document.getElementById('school').value,
         room: document.getElementById('room').value || null,
         electricity: document.getElementById('electricity').value || null,
