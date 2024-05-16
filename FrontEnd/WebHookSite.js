@@ -1,16 +1,37 @@
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('date');
+    const today = new Date().toLocaleDateString('de-DE');
+    dateInput.value = today;
+});
+
+document.getElementById('dataType').addEventListener('change', function(event) {
+    const dataInput = document.getElementById('dataInput');
+    const dataLabel = document.getElementById('dataLabel');
+
+    if (event.target.value === 'electricity') {
+        dataLabel.textContent = 'Stromverbrauch (kWh):';
+        dataInput.style.display = 'block';
+    } else if (event.target.value === 'water') {
+        dataLabel.textContent = 'Wasserverbrauch (Liter):';
+        dataInput.style.display = 'block';
+    } else {
+        dataInput.style.display = 'none';
+    }
+});
+
 document.getElementById('sustainabilityForm').addEventListener('submit', function(event) {
     event.preventDefault();
 
-    // Daten sammeln
+    
     const data = {
-        //tenantId: document.getElementById('tenantId').value,
         school: document.getElementById('school').value,
         room: document.getElementById('room').value || null,
-        electricity: document.getElementById('electricity').value || null,
-        water: document.getElementById('water').value || null
+        dataType: document.getElementById('dataType').value,
+        dataValue: document.getElementById('dataValue').value || null,
+        date: document.getElementById('date').value
     };
 
-    // URL Ihrer Azure Function
+  
     const azureFunctionUrl = 'https://campusecorivaldatareceiver.azurewebsites.net/api/WebhookDataReceiver?code=LBhH6nwgUFJ-RedsB1thlnHQyjsrQMU6Ia0ie5hUHm6aAzFuzJSAXg==';
 
     fetch(azureFunctionUrl, {
@@ -21,16 +42,12 @@ document.getElementById('sustainabilityForm').addEventListener('submit', functio
         }
     })
     .then(response => {
-        // Überprüfen, ob der HTTP-Statuscode erfolgreich ist
         if (!response.ok) {
-            // Lesen Sie den Body als Text, um sowohl Text- als auch JSON-Fehlermeldungen zu behandeln
             return response.text().then(text => {
                 try {
-                    // Versuchen, den Text als JSON zu interpretieren
                     const errorData = JSON.parse(text);
                     throw new Error('Error ' + response.status + ': ' + (errorData.message || errorData.error || text));
                 } catch (err) {
-                    // Wenn es kein JSON ist, verwenden Sie den reinen Text
                     throw new Error('Error ' + response.status + ': ' + text);
                 }
             });

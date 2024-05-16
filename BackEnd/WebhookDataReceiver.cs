@@ -21,19 +21,20 @@ namespace Company.Function
         )
         {
             log.LogInformation("Function triggered by webhook post request...");
-           
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
 
             log.LogInformation("extracting data stream");
             JObject harvestJson = JsonConvert.DeserializeObject<JObject>(requestBody);
-             log.LogInformation("harvester initialized");
-            log.LogInformation($"feeding harvester with gathered data");
+            log.LogInformation("harvester initialized");
+            log.LogInformation($"feeding harvester with gathered data....");
 
             if (harvestJson == null)
             {
                 log.LogError("data stream did not locate any JSON outcome");
-                return new JsonResult(new {error = "data stream did not locate any JSON outcome"});
+                return new JsonResult(
+                    new { error = "data stream did not locate any JSON outcome" }
+                );
             }
 
             if (harvestJson["id"] == null)
@@ -48,7 +49,6 @@ namespace Company.Function
             log.LogInformation($"harvester belly: {requestBody}");
 
             log.LogInformation($"starting CosmosDB process...");
-        
 
             string connectionStringURL = "https://kevinweigel.documents.azure.com:443/";
             log.LogInformation($"setting up connection URL");
@@ -62,15 +62,13 @@ namespace Company.Function
                 "HarvestedDataContainer"
             );
 
-
             try
             {
                 if (harvestJson["tenantId"] == null)
                 {
                     log.LogError("There is no PartitionKey delivered");
-                    return new JsonResult(new { error = "There is no PartitionKey delivered"});
+                    return new JsonResult(new { error = "There is no PartitionKey delivered" });
                 }
-
 
                 log.LogInformation("Sending harvestClient to Cosmos....");
                 ItemResponse<JObject> response = await container.CreateItemAsync(
@@ -79,13 +77,23 @@ namespace Company.Function
                 );
                 log.LogInformation($"harvester is now in CosmosDB");
                 log.LogInformation("Thank you for using CampusEcoRival API");
-                return new JsonResult(new{message="harvester is now in CosmosDB", id = response.Resource["id".ToString()]} );
-            
+                return new JsonResult(
+                    new
+                    {
+                        message = "harvester is now in CosmosDB",
+                        id = response.Resource["id".ToString()]
+                    }
+                );
             }
             catch (Exception ex)
             {
                 log.LogError($"harvester couldn't get sended to Cosmos: {ex}");
-                return new JsonResult(new {error =$"harvester couldn't get sended to Cosmos: {ex.Message}"}) {StatusCode = StatusCodes.Status500InternalServerError};
+                return new JsonResult(
+                    new { error = $"harvester couldn't get sended to Cosmos: {ex.Message}" }
+                )
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
             }
         }
     }
