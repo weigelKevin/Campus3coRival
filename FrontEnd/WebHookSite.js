@@ -10,28 +10,40 @@ document.getElementById('dataType').addEventListener('change', function(event) {
 
     if (event.target.value === 'electricity') {
         dataLabel.textContent = 'Stromverbrauch (kWh):';
-        dataInput.style.display = 'block';
+        dataInput.classList.remove('hidden');
     } else if (event.target.value === 'water') {
         dataLabel.textContent = 'Wasserverbrauch (Liter):';
-        dataInput.style.display = 'block';
+        dataInput.classList.remove('hidden');
     } else {
-        dataInput.style.display = 'none';
+        dataInput.classList.add('hidden');
     }
 });
+
+function toggleGermanyFields() {
+    const germanyFields = document.getElementById('germanyFields');
+    const countrySelect = document.getElementById('country');
+    
+    if (countrySelect.value === 'Germany') {
+        germanyFields.classList.remove('hidden');
+    } else {
+        germanyFields.classList.add('hidden');
+    }
+}
 
 document.getElementById('sustainabilityForm').addEventListener('submit', function(event) {
     event.preventDefault();
 
-    
     const data = {
         school: document.getElementById('school').value,
         room: document.getElementById('room').value || null,
         dataType: document.getElementById('dataType').value,
         dataValue: document.getElementById('dataValue').value || null,
-        date: document.getElementById('date').value
+        date: document.getElementById('date').value,
+        country: document.getElementById('country').value,
+        postcode: document.getElementById('postcode').value || null,
+        state: document.getElementById('state').value || null
     };
 
-  
     const azureFunctionUrl = 'https://campusecorivaldatareceiver.azurewebsites.net/api/WebhookDataReceiver?code=LBhH6nwgUFJ-RedsB1thlnHQyjsrQMU6Ia0ie5hUHm6aAzFuzJSAXg==';
 
     fetch(azureFunctionUrl, {
