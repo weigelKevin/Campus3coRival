@@ -2,6 +2,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const dateInput = document.getElementById('date');
     const today = new Date().toLocaleDateString('de-DE');
     dateInput.value = today;
+
+    // Parallax effect
+    window.addEventListener('scroll', function() {
+        const scrolled = window.scrollY;
+        document.querySelector('.parallax').style.backgroundPositionY = -(scrolled * 0.5) + 'px';
+    });
 });
 
 document.getElementById('dataType').addEventListener('change', function(event) {
@@ -32,6 +38,8 @@ function toggleGermanyFields() {
 
 document.getElementById('sustainabilityForm').addEventListener('submit', function(event) {
     event.preventDefault();
+    const spinner = document.getElementById('loadingSpinner');
+    spinner.classList.remove('hidden');
 
     const data = {
         school: document.getElementById('school').value,
@@ -54,6 +62,7 @@ document.getElementById('sustainabilityForm').addEventListener('submit', functio
         }
     })
     .then(response => {
+        spinner.classList.add('hidden');
         if (!response.ok) {
             return response.text().then(text => {
                 try {
