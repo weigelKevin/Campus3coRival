@@ -3,37 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nachhaltigkeitsdaten Erfassung</title>
-    <link rel="stylesheet" href="WebHookSite.css">
+    <title>CampusEcoRival Webhook Sender</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+    <link rel="stylesheet" href="WebHookSite.css">
 </head>
 <body>
-    <form id="sustainabilityForm">
-        <h1><i class="fas fa-leaf"></i> Nachhaltigkeitsdaten Erfassung</h1>
+    <div class="parallax">
+        <div class="container">
+            <form id="sustainabilityForm">
+                <div class="header">
+                    <img src="/CampusEcoRivalLogo.png" alt="CampusEcoRival Logo" class="logo">
+                    <h1><i class="fas fa-leaf"></i> CampusEcoRival Webhook Sender</h1>
+                </div>
+                <p>Bitte füllen Sie das folgende Formular aus, um Nachhaltigkeitsdaten zu übermitteln.</p>
 
-        <label for="school"><i class="fas fa-school"></i> Schule:</label>
-        <input type="text" id="school" name="school" required>
+                <div class="form-group">
+                    <label for="country"><i class="fas fa-globe"></i> Wähle ein Land:</label>
+                    <select id="country" name="country" required onchange="toggleGermanyFields()" data-tooltip="Wählen Sie Ihr Land">
+                        <option value="">--Bitte wählen--</option>
+                        <option value="Germany">Deutschland</option>
+                        <option value="France">Frankreich</option>
+                        <option value="USA">USA</option>
+                    </select>
+                </div>
 
-        <label for="room"><i class="fas fa-door-closed"></i> Raumnummer (optional):</label>
-        <input type="text" id="room" name="room">
+                <div id="germanyFields" class="hidden">
+                    <div class="form-group">
+                        <label for="postcode"><i class="fas fa-map-pin"></i> Postleitzahl:</label>
+                        <input type="text" id="postcode" name="postcode" data-tooltip="Geben Sie die Postleitzahl ein">
+                    </div>
+                    <div class="form-group">
+                        <label for="state"><i class="fas fa-map"></i> Bundesland:</label>
+                        <select id="state" name="state" data-tooltip="Wählen Sie Ihr Bundesland">
+                            <option value="">--Bitte wählen--</option>
+                            <option value="Baden-Württemberg">Baden-Württemberg</option>
+                            <option value="Bayern">Bayern</option>
+                            <option value="Berlin">Berlin</option>
+                            <option value="Brandenburg">Brandenburg</option>
+                            <option value="Bremen">Bremen</option>
+                            <option value="Hamburg">Hamburg</option>
+                            <option value="Hessen">Hessen</option>
+                            <option value="Mecklenburg-Vorpommern">Mecklenburg-Vorpommern</option>
+                            <option value="Niedersachsen">Niedersachsen</option>
+                            <option value="Nordrhein-Westfalen">Nordrhein-Westfalen</option>
+                            <option value="Rheinland-Pfalz">Rheinland-Pfalz</option>
+                            <option value="Saarland">Saarland</option>
+                            <option value="Sachsen">Sachsen</option>
+                            <option value="Sachsen-Anhalt">Sachsen-Anhalt</option>
+                            <option value="Schleswig-Holstein">Schleswig-Holstein</option>
+                            <option value="Thüringen">Thüringen</option>
+                        </select>
+                    </div>
+                </div>
 
-        <label for="dataType"><i class="fas fa-database"></i> Art des Verbrauchs:</label>
-        <select id="dataType" name="dataType" required>
-            <option value="">Wählen Sie die Art des Verbrauchs</option>
-            <option value="electricity">Stromverbrauch (kWh)</option>
-            <option value="water">Wasserverbrauch (Liter)</option>
-        </select>
+                <div class="form-group">
+                    <label for="school"><i class="fas fa-school"></i> Schule:</label>
+                    <input type="text" id="school" name="school" required data-tooltip="Geben Sie den Namen Ihrer Schule ein">
+                </div>
 
-        <div id="dataInput" style="display:none;">
-            <label for="dataValue" id="dataLabel">Verbrauchswert:</label>
-            <input type="number" id="dataValue" name="dataValue" required>
+                <div class="form-group">
+                    <label for="room"><i class="fas fa-door-closed"></i> Raumnummer (optional):</label>
+                    <input type="text" id="room" name="room" data-tooltip="Geben Sie die Raumnummer ein (optional)">
+                </div>
+
+                <div class="form-group">
+                    <label for="dataType"><i class="fas fa-database"></i> Art des Verbrauchs:</label>
+                    <select id="dataType" name="dataType" required data-tooltip="Wählen Sie die Art des Verbrauchs">
+                        <option value="">Wählen Sie die Art des Verbrauchs</option>
+                        <option value="electricity">Stromverbrauch (kWh)</option>
+                        <option value="water">Wasserverbrauch (Liter)</option>
+                    </select>
+                </div>
+
+                <div id="dataInput" class="form-group hidden">
+                    <label for="dataValue" id="dataLabel">Verbrauchswert:</label>
+                    <input type="number" id="dataValue" name="dataValue" required data-tooltip="Geben Sie den Verbrauchswert ein">
+                </div>
+
+                <div class="form-group">
+                    <label for="date"><i class="fas fa-calendar-day"></i> Datum:</label>
+                    <input type="text" id="date" name="date" readonly>
+                </div>
+
+                <button type="submit"><i class="fas fa-paper-plane"></i> Daten senden</button>
+                <div id="loadingSpinner" class="loading-spinner hidden">
+                    <i class="fas fa-spinner fa-spin"></i> Senden...
+                </div>
+            </form>
         </div>
-
-        <label for="date"><i class="fas fa-calendar-day"></i> Datum:</label>
-        <input type="text" id="date" name="date" readonly>
-
-        <button type="submit"><i class="fas fa-paper-plane"></i> Daten senden</button>
-    </form>
+    </div>
 
     <script src="WebHookSite.js"></script>
 </body>
