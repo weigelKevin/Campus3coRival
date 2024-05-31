@@ -1,3 +1,9 @@
+function generateHmacSignature(secretKey, payload) {
+    const signature = CryptoJS.HmacSHA256(payload, secretKey).toString(CryptoJS.enc.Hex);
+    console.log(`Generated Signature: ${signature}`);
+    return signature;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const dateInput = document.getElementById('date');
     const today = new Date().toLocaleDateString('de-DE');
@@ -28,7 +34,7 @@ document.getElementById('dataType').addEventListener('change', function(event) {
 function toggleGermanyFields() {
     const germanyFields = document.getElementById('germanyFields');
     const countrySelect = document.getElementById('country');
-    
+
     if (countrySelect.value === 'Germany') {
         germanyFields.classList.remove('hidden');
     } else {
@@ -52,13 +58,21 @@ document.getElementById('sustainabilityForm').addEventListener('submit', functio
         state: document.getElementById('state').value || null
     };
 
+    const payload = JSON.stringify(data);
+    const secretKey = 'CER20CER24CER23489039?47483924JD@'; // replace with your actual secret key
+    const signature = generateHmacSignature(secretKey, payload);
+
+    console.log("Generated Signature: ", signature);
+    console.log("Payload: ", payload);
+
     const azureFunctionUrl = 'https://campusecorivaldatareceiver.azurewebsites.net/api/WebhookDataReceiver?code=LBhH6nwgUFJ-RedsB1thlnHQyjsrQMU6Ia0ie5hUHm6aAzFuzJSAXg==';
 
     fetch(azureFunctionUrl, {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: payload,
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-HMAC-Signature': signature
         }
     })
     .then(response => {
